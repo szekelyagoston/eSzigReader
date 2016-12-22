@@ -1,36 +1,54 @@
 package com.gusztafszon.eszigreader;
 
-import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.DatePicker;
-import android.widget.EditText;
+import android.widget.TextView;
 
 import com.gusztafszon.eszigreader.dialog.AddMRTDDialogFragment;
 import com.gusztafszon.eszigreader.interfaces.IFragmentResult;
 import com.gusztafszon.eszigreader.mrtd.registration.dto.MRTDRegistrationDto;
+import com.gusztafszon.eszigreader.mrtd.registration.model.IdDocument;
+import com.gusztafszon.eszigreader.mrtd.registration.model.MainActivityModel;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String MY_REFERENCES = "myRefs";
+    private static final String DOCUMENT_NUMBER = "document_number";
+    private static final String EXPIRATION_DATE = "expiration_date";
+    private static final String DATE_OF_BIRTH = "date_of_birth";
+
+    private MainActivityModel model = new MainActivityModel();
+
+    SharedPreferences preferences;
+
+    TextView documentNumberTextView;
+    TextView expirationDateTextView;
+    TextView dateOfBirthTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //getting shared preferences
+        preferences = getSharedPreferences(MY_REFERENCES, 0);
+        setCurrentDocumentFromPreferences();
+
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        updateUI();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -40,7 +58,9 @@ public class MainActivity extends AppCompatActivity {
                 dialog.setResultCallback(new IFragmentResult<MRTDRegistrationDto>() {
                     @Override
                     public void onResult(MRTDRegistrationDto result) {
-                        System.out.println("asd");
+                        model.setDocument(result);
+                        saveResultToPreferences(result);
+                        updateUI();
                     }
                 });
                 FragmentManager ft = getSupportFragmentManager();
@@ -49,6 +69,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void setCurrentDocumentFromPreferences() {
+        model.setDocument(new IdDocument(preferences.getString(DOCUMENT_NUMBER, ""), preferences.getString(EXPIRATION_DATE, ""), preferences.getString(DATE_OF_BIRTH, "")));
+    }
+
+    private void saveResultToPreferences(MRTDRegistrationDto result) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(DOCUMENT_NUMBER, result.getDocumentNumber());
+        editor.putString(EXPIRATION_DATE, result.getExpirationDate());
+        editor.putString(DATE_OF_BIRTH, result.getDateOfBirth());
+        editor.commit();
+
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -71,4 +105,17 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void updateUI() {
+        documentNumberTextView = (TextView) findViewById(R.id.documentnumber);
+        expirationDateTextView = (TextView) findViewById(R.id.expirationdate);
+        dateOfBirthTextView = (TextView) findViewById(R.id.dateofbirth);
+
+        documentNumberTextView.setText(model.getDocument().getDocumentNumber());
+        expirationDateTextView.setText(model.getDocument().getExpirationDate());
+        dateOfBirthTextView.setText(model.getDocument().getDateOfBirth());
+
+
+    }
+
 }

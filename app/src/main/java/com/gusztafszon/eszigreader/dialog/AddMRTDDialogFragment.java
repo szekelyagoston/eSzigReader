@@ -69,10 +69,11 @@ public class AddMRTDDialogFragment extends DialogFragment {
         super.onStart();
         Dialog dialog = this.getDialog();
 
-        EditText expDate = (EditText) dialog.findViewById(R.id.exp_date);
-        EditText dateOfBirth = (EditText) dialog.findViewById(R.id.date_of_birth);
-        addDatePickerToEditText(expDate);
-        addDatePickerToEditText(dateOfBirth);
+        EditText dateOfBirthEditText = (EditText) dialog.findViewById(R.id.date_of_birth);
+        EditText expDateEditText = (EditText) dialog.findViewById(R.id.exp_date);
+
+        addDatePickerToEditText(dateOfBirthEditText);
+        addDatePickerToEditText(expDateEditText);
 
 
     }
