@@ -23,70 +23,6 @@
     </android.support.design.widget.AppBarLayout>
 
     <include layout="@layout/content_main" android:id="@+id/content_main"/>
-    <!--<LinearLayout android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:orientation="vertical"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            xmlns:android="http://schemas.android.com/apk/res/android">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/document_number"
-                />
-            <TextView
-                android:id="@+id/documentnumber"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right|center_vertical"
-                android:imeOptions="actionNext"
-                />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            xmlns:android="http://schemas.android.com/apk/res/android">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/exp_date"
-                />
-            <TextView
-                android:id="@+id/expirationdate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right|center_vertical"
-                android:imeOptions="actionNext"
-                />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            xmlns:android="http://schemas.android.com/apk/res/android">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/date_of_birth"
-                />
-            <TextView
-                android:id="@+id/dateofbirth"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right|center_vertical"
-                android:imeOptions="actionNext"
-                />
-        </LinearLayout>
-    </LinearLayout>-->
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -94,6 +30,13 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:srcCompat="@android:drawable/ic_menu_edit" />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/start_reading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="@dimen/fab_margin"
+        app:srcCompat="@android:drawable/ic_media_play" />
 
 </android.support.design.widget.CoordinatorLayout>

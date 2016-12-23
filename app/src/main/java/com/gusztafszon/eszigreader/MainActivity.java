@@ -68,6 +68,14 @@ public class MainActivity extends AppCompatActivity {
                 //setDatePickers(dialog);
             }
         });
+
+        FloatingActionButton startReadingButton = (FloatingActionButton) findViewById(R.id.start_reading);
+        startReadingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("startreading");
+            }
+        });
     }
 
     private void setCurrentDocumentFromPreferences() {
