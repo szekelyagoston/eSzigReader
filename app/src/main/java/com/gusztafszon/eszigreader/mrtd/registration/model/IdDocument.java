@@ -47,4 +47,23 @@ public class IdDocument {
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
+
+    public String getFormattedExpirationDate(){
+        return formatToDateFormat(expirationDate);
+    }
+
+    public String getFormattedDateOfBirth(){
+        return formatToDateFormat(dateOfBirth);
+    }
+
+    private String formatToDateFormat(String string) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(string.substring(0, 2));
+        builder.append(("/"));
+        builder.append(string.substring(2, 4));
+        builder.append(("/"));
+        builder.append(string.substring(4, 6));
+
+        return builder.toString();
+    }
 }

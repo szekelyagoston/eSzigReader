@@ -120,8 +120,8 @@ public class MainActivity extends AppCompatActivity {
         dateOfBirthTextView = (TextView) findViewById(R.id.dateofbirth);
 
         documentNumberTextView.setText(model.getDocument().getDocumentNumber());
-        expirationDateTextView.setText(model.getDocument().getExpirationDate());
-        dateOfBirthTextView.setText(model.getDocument().getDateOfBirth());
+        expirationDateTextView.setText(model.getDocument().getFormattedExpirationDate());
+        dateOfBirthTextView.setText(model.getDocument().getFormattedDateOfBirth());
 
 
     }
