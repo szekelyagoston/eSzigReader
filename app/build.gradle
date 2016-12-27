@@ -27,4 +27,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.+'
     compile 'com.android.support:design:24.+'
     testCompile 'junit:junit:4.12'
+    //compile group: 'org.jmrtd', name: 'jmrtd', version: '0.5.11'
+    compile 'org.jmrtd:jmrtd:0.5.5'
+    compile 'com.madgag.spongycastle:prov:1.54.0.0'
+    compile 'net.sf.scuba:scuba-sc-android:0.0.9';
 }
