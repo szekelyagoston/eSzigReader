@@ -70,10 +70,5 @@
                 />
         </LinearLayout>
     </LinearLayout>
-    <ImageView
-        android:id="@+id/profilepicture"
-        android:layout_width="600px"
-        android:layout_height="800px"
-        android:layout_gravity="center"
-        />
+
 </LinearLayout>

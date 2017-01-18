@@ -57,13 +57,18 @@ public class IdDocument {
     }
 
     private String formatToDateFormat(String string) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(string.substring(0, 2));
-        builder.append(("/"));
-        builder.append(string.substring(2, 4));
-        builder.append(("/"));
-        builder.append(string.substring(4, 6));
+        if (string.length() == 6){
+            StringBuilder builder = new StringBuilder();
+            builder.append(string.substring(0, 2));
+            builder.append(("/"));
+            builder.append(string.substring(2, 4));
+            builder.append(("/"));
+            builder.append(string.substring(4, 6));
 
-        return builder.toString();
+            return builder.toString();
+        }
+
+        return "";
+
     }
 }
