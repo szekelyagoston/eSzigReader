@@ -28,6 +28,7 @@ import net.sf.scuba.smartcards.CardServiceException;
 
 import org.jmrtd.BACKeySpec;
 import org.jmrtd.PassportService;
+import org.jmrtd.lds.DG1File;
 import org.jmrtd.lds.DG2File;
 import org.jmrtd.lds.LDSFileUtil;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
@@ -109,7 +110,7 @@ public class NfcActivity  extends AppCompatActivity {
 
             ps.doBAC(bacKey);
             InputStream pictureInputStream = null;
-
+            InputStream dg1InputStream = null;
             try{
                 pictureInputStream = ps.getInputStream(PassportService.EF_DG2);
                 DG2File dg2 = (DG2File) LDSFileUtil.getLDSFile(PassportService.EF_DG2, pictureInputStream);
@@ -119,6 +120,12 @@ public class NfcActivity  extends AppCompatActivity {
 
                 Bitmap bmp = BitmapFactory.decodeStream(dg2.getFaceInfos().get(0).getFaceImageInfos().get(0).getImageInputStream());
                 imageView.setImageBitmap(bmp);
+
+                dg1InputStream = ps.getInputStream(PassportService.EF_DG1);
+                DG1File dg1 = (DG1File)LDSFileUtil.getLDSFile(PassportService.EF_DG1, dg1InputStream);
+
+                System.out.println("Doc code : " + dg1.getMRZInfo().getDocumentNumber());
+                System.out.println("PATH : " + model.getIdServerPath());
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -140,5 +147,6 @@ public class NfcActivity  extends AppCompatActivity {
 
     private void setCurrentDocumentFromPreferences() {
         model.setDocument(new IdDocument(preferences.getString(Constants.DOCUMENT_NUMBER, ""), preferences.getString(Constants.EXPIRATION_DATE, ""), preferences.getString(Constants.DATE_OF_BIRTH, "")));
+        model.setIdServerPath(preferences.getString(Constants.APP_URL, ""));
     }
 }

@@ -1,6 +1,7 @@
 package com.gusztafszon.eszigreader;
 
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
@@ -17,6 +18,8 @@ import com.gusztafszon.eszigreader.interfaces.IFragmentResult;
 import com.gusztafszon.eszigreader.mrtd.registration.dto.MRTDRegistrationDto;
 import com.gusztafszon.eszigreader.mrtd.registration.model.IdDocument;
 import com.gusztafszon.eszigreader.mrtd.registration.model.MainActivityModel;
+
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -46,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
         expirationDateTextView = (TextView) findViewById(R.id.expirationdate);
         dateOfBirthTextView = (TextView) findViewById(R.id.dateofbirth);
 
-
         updateUI();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -67,6 +69,22 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        //TEST
+        Uri data = getIntent().getData();
+        /*String scheme = data.getScheme(); // "http"
+        String host = data.getHost(); // "twitter.com"
+        List<String> params = data.getPathSegments();
+        String first = params.get(0); // "status"
+        String second = params.get(1); // "1234"*/
+
+        System.out.println(data);
+        if (data != null){
+            model.setIdServerPath(data.getScheme());
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString(Constants.APP_URL, data.getEncodedSchemeSpecificPart());
+            editor.commit();
+        }
 
     }
 

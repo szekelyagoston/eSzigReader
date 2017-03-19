@@ -12,6 +12,8 @@ import java.util.List;
 public class MainActivityModel {
     private IdDocument document;
 
+    private String idServerPath;
+
     public IdDocument getDocument() {
         return document;
     }
@@ -22,5 +24,13 @@ public class MainActivityModel {
 
     public void setDocument(MRTDRegistrationDto document) {
         this.document = new IdDocument(document);
+    }
+
+    public String getIdServerPath() {
+        return idServerPath;
+    }
+
+    public void setIdServerPath(String idServerPath) {
+        this.idServerPath = idServerPath;
     }
 }
