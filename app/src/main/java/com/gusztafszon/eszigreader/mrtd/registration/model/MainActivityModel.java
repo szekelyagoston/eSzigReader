@@ -14,6 +14,8 @@ public class MainActivityModel {
 
     private String idServerPath;
 
+    private String uid;
+
     public IdDocument getDocument() {
         return document;
     }
@@ -32,5 +34,13 @@ public class MainActivityModel {
 
     public void setIdServerPath(String idServerPath) {
         this.idServerPath = idServerPath;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 }

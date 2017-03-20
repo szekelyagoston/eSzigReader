@@ -70,21 +70,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //TEST
-        Uri data = getIntent().getData();
-        /*String scheme = data.getScheme(); // "http"
-        String host = data.getHost(); // "twitter.com"
-        List<String> params = data.getPathSegments();
-        String first = params.get(0); // "status"
-        String second = params.get(1); // "1234"*/
+        String appUrl = getIntent().getStringExtra("appurl");
+        String uid = getIntent().getStringExtra("uid");
 
-        System.out.println(data);
-        if (data != null){
-            model.setIdServerPath(data.getScheme());
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(Constants.APP_URL, data.getEncodedSchemeSpecificPart());
-            editor.commit();
-        }
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(Constants.APP_URL, appUrl);
+        editor.putString(Constants.UID, uid);
+        editor.commit();
 
     }
 

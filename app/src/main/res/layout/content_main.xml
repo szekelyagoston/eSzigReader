@@ -69,6 +69,17 @@
                 android:imeOptions="actionNext"
                 />
         </LinearLayout>
+
+
     </LinearLayout>
 
+    <TextView
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="After setting your document information above, please push your ID Card to the back of your phone with NFC enabled!"
+        />
 </LinearLayout>
