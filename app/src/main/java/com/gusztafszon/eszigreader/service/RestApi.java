@@ -18,7 +18,7 @@ import okhttp3.Response;
  * Created by Gusztafszon on 2017-03-20.
  */
 
-public class RestApi implements Callable<String> {
+public class RestApi implements Callable<Response> {
 
     private static final String SEND_DOC_NO = "ca/verify/document";
     public static final MediaType JSON
@@ -38,7 +38,7 @@ public class RestApi implements Callable<String> {
 
 
     @Override
-    public String call() throws Exception {
+    public Response call() throws Exception {
 
         JSONObject json = new JSONObject();
         json.put("cardNo", docId);
@@ -57,6 +57,6 @@ public class RestApi implements Callable<String> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return response.toString();
+        return response;
     }
 }

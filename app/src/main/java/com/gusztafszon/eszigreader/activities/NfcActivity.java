@@ -7,6 +7,7 @@ import android.nfc.tech.IsoDep;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -34,6 +35,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import okhttp3.Response;
 
 
 /**
@@ -121,11 +124,21 @@ public class NfcActivity  extends AppCompatActivity {
 
 
                 ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                Callable<String> callable =  new RestApi(docId, model.getIdServerPath(), model.getUid());
-                Future<String> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
-                String result= future.get();
+                Callable<Response> callable =  new RestApi(docId, model.getIdServerPath(), model.getUid());
+                Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
+                Response result= future.get();
 
-                System.out.println(result);
+                if (result.isSuccessful()){
+                    Button button = (Button)findViewById(R.id.button_challenge);
+                    button.setEnabled(true);
+                    button.setText("CLOSE APP AND REDIRECT TO LOGIN");
+                    button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            NfcActivity.this.finishAffinity();
+                        }
+                    });
+                }
 
                 executor.shutdown();
             }catch (Exception e){
