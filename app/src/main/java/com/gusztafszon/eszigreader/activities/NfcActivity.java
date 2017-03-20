@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.gusztafszon.eszigreader.R;
 import com.gusztafszon.eszigreader.constants.Constants;
@@ -118,10 +119,6 @@ public class NfcActivity  extends AppCompatActivity {
                 DG1File dg1 = (DG1File)LDSFileUtil.getLDSFile(PassportService.EF_DG1, dg1InputStream);
 
                 String docId = dg1.getMRZInfo().getDocumentNumber();
-                System.out.println("PATH : " + model.getIdServerPath());
-                System.out.println("UID : " + model.getUid());
-
-
 
                 ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
                 Callable<Response> callable =  new RestApi(docId, model.getIdServerPath(), model.getUid());
@@ -129,9 +126,13 @@ public class NfcActivity  extends AppCompatActivity {
                 Response result= future.get();
 
                 if (result.isSuccessful()){
+                    TextView textView = (TextView)findViewById(R.id.text_challenge);
+                    textView.setText(result.body().string());
+
                     Button button = (Button)findViewById(R.id.button_challenge);
                     button.setEnabled(true);
-                    button.setText("CLOSE APP AND REDIRECT TO LOGIN");
+                   //button.setText("CLOSE APP AND REDIRECT TO LOGIN");
+                    button.setText("START CHALLENGE");
                     button.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
