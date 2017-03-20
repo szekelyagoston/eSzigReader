@@ -8,7 +8,7 @@ import java.io.ByteArrayInputStream;
 
 public class VideoFrame {
     private byte[] data;
-    private ByteArrayInputStream processedInputStream;
+    private byte[] processedData;
 
     public VideoFrame(byte[] data) {
         this.data = data;
@@ -18,11 +18,11 @@ public class VideoFrame {
         return data;
     }
 
-    public ByteArrayInputStream getProcessedInputStream() {
-        return processedInputStream;
+    public byte[] getProcessedData() {
+        return processedData;
     }
 
-    public void setProcessedInputStream(ByteArrayInputStream processedInputStream) {
-        this.processedInputStream = processedInputStream;
+    public void setProcessedData(byte[] processedData) {
+        this.processedData = processedData;
     }
 }

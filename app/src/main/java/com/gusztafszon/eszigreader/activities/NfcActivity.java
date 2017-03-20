@@ -21,6 +21,8 @@ import com.gusztafszon.eszigreader.constants.Constants;
 import com.gusztafszon.eszigreader.mrtd.registration.model.IdDocument;
 import com.gusztafszon.eszigreader.mrtd.registration.model.MainActivityModel;
 import com.gusztafszon.eszigreader.service.RestApi;
+import com.gusztafszon.eszigreader.service.RestFinishApi;
+import com.gusztafszon.eszigreader.service.RestVideoApi;
 import com.gusztafszon.eszigreader.service.camera.CameraPreview;
 import com.gusztafszon.eszigreader.utils.CountDownType;
 import com.gusztafszon.eszigreader.utils.ICountDownEvents;
@@ -43,6 +45,7 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -173,15 +176,6 @@ public class NfcActivity  extends AppCompatActivity {
                                 }
                             }
                     );
-
-
-
-                    /*button.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            NfcActivity.this.finishAffinity();
-                        }
-                    });*/
                 }
 
                 executor.shutdown();
@@ -254,29 +248,58 @@ public class NfcActivity  extends AppCompatActivity {
                 releaseCamera();
 
                List<VideoFrame> frames = videoAnalyzer.filterFrames();
-                System.out.println(frames.size());
-                /*try {
-                    videoAnalyzer.processData(challenge, new AsyncResponse<ChallengeResult>(){
+                System.out.println(model.getUid());
+
+                ScheduledExecutorService executor = Executors.newScheduledThreadPool(frames.size());
+                List<Response> responses = new ArrayList<Response>();
+                for (VideoFrame frame : frames){
+                    Callable<Response> callable =  new RestVideoApi(model.getIdServerPath(), model.getUid(), frame.getProcessedData());
+                    Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
+                    Response result = null;
+                    try {
+                        result= future.get();
+                        responses.add(result);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                ScheduledExecutorService finishExecutor = Executors.newScheduledThreadPool(1);
+                Callable<Response> callable =  new RestFinishApi(model.getIdServerPath(), model.getUid());
+                Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
+                Response result = null;
+                try {
+                    result = future.get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+
+                if (result.isSuccessful()){
+                    Button button = (Button)findViewById(R.id.button_challenge);
+                    button.setEnabled(true);
+                    button.setText("CLOSE APP AND REDIRECT TO LOGIN");
+
+                    button.setOnClickListener(new View.OnClickListener() {
                         @Override
-                        public void processFinish(ChallengeResult result) {
-                            if (result.getAccepted()){
-                                textView.setText("ACCEPTED");
-                            }else{
-                                textView.setText("NOT ACCEPTED");
-                            }
+                        public void onClick(View v) {
+                            NfcActivity.this.finishAffinity();
                         }
                     });
-                } catch (GoogleMobileVisionMissingContextException e) {
-                    e.printStackTrace();
-                }*/
 
-                //testShowPicturesInOrder(picturesFromVideo);
-                //detectionProgressDialog.dismiss();
+                }else{
+                    Button button = (Button)findViewById(R.id.button_challenge);
+                    button.setEnabled(false);
+                    button.setText("NOT SUCCESSFULL");
+                }
             }
 
 
         }).start();
-        System.out.println("Challenge");
 
     }
 

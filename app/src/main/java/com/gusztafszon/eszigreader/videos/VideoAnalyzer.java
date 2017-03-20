@@ -87,10 +87,8 @@ public class VideoAnalyzer implements IVideoAnalyzer{
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             //compress quality -> if too high, method will be slow.
             bitmap.compress(Bitmap.CompressFormat.JPEG, 3, outputStream);
-            ByteArrayInputStream inputStream =
-                    new ByteArrayInputStream(outputStream.toByteArray());
 
-            frame.setProcessedInputStream(inputStream);
+            frame.setProcessedData(outputStream.toByteArray());
             framesForProcessing.add(frame);
         }
 
