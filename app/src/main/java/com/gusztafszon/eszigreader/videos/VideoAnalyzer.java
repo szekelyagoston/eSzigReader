@@ -22,7 +22,7 @@ import java.util.List;
 
 public class VideoAnalyzer implements IVideoAnalyzer{
 
-    private static final int MAX_SELECTED_FRAMES = 20;
+    private static final int MAX_SELECTED_FRAMES = 10;
 
     private List<VideoFrame> frames = new ArrayList<>();
 
