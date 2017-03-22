@@ -11,4 +11,7 @@ public class Constants {
     public static final String DATE_OF_BIRTH = "date_of_birth";
     public static final String APP_URL = "app_url";
     public static final String UID = "uid";
+    public static final String TYPE = "type";
+    public static final String URL = "url";
+    public static final String USERNAME = "username";
 }

@@ -71,11 +71,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
         String appUrl = getIntent().getStringExtra("appurl");
+        String url = getIntent().getStringExtra("url");
         String uid = getIntent().getStringExtra("uid");
+        String type = getIntent().getStringExtra("type");
+        String username = getIntent().getStringExtra("username");
 
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(Constants.APP_URL, appUrl);
         editor.putString(Constants.UID, uid);
+        editor.putString(Constants.TYPE, type);
+        editor.putString(Constants.URL, url);
+        editor.putString(Constants.USERNAME, username);
         editor.commit();
 
     }

@@ -3,6 +3,8 @@ package com.gusztafszon.eszigreader.activities;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
@@ -22,6 +24,7 @@ import com.gusztafszon.eszigreader.mrtd.registration.model.IdDocument;
 import com.gusztafszon.eszigreader.mrtd.registration.model.MainActivityModel;
 import com.gusztafszon.eszigreader.service.RestApi;
 import com.gusztafszon.eszigreader.service.RestFinishApi;
+import com.gusztafszon.eszigreader.service.RestRegistration;
 import com.gusztafszon.eszigreader.service.RestVideoApi;
 import com.gusztafszon.eszigreader.service.camera.CameraPreview;
 import com.gusztafszon.eszigreader.utils.CountDownType;
@@ -37,9 +40,11 @@ import net.sf.scuba.smartcards.CardServiceException;
 import org.jmrtd.BACKeySpec;
 import org.jmrtd.PassportService;
 import org.jmrtd.lds.DG1File;
+import org.jmrtd.lds.DG2File;
 import org.jmrtd.lds.LDSFileUtil;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.security.Security;
 import java.util.ArrayList;
@@ -142,57 +147,164 @@ public class NfcActivity  extends AppCompatActivity {
             };
 
             ps.doBAC(bacKey);
-            //InputStream pictureInputStream = null;
-            InputStream dg1InputStream = null;
-            try{
-                dg1InputStream = ps.getInputStream(PassportService.EF_DG1);
-                DG1File dg1 = (DG1File)LDSFileUtil.getLDSFile(PassportService.EF_DG1, dg1InputStream);
 
-                String docId = dg1.getMRZInfo().getDocumentNumber();
 
-                ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                Callable<Response> callable =  new RestApi(docId, model.getIdServerPath(), model.getUid());
-                Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
-                Response result= future.get();
-
-                if (result.isSuccessful()){
-                    startCamera();
-                    //TODO: refactor maybe to a new file, this is ugly as hell
-                    videoAnalyzer = new VideoAnalyzer(camera.getParameters());
-
-                    textView = (TextView)findViewById(R.id.text_challenge);
-                    final String challengeMessage = result.body().string();
-
-                    Button button = (Button)findViewById(R.id.button_challenge);
-                    button.setEnabled(true);
-                   //button.setText("CLOSE APP AND REDIRECT TO LOGIN");
-                    button.setText("START CHALLENGE");
-
-                    button.setOnClickListener(
-                            new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    startCountDown(challengeMessage);
-                                }
-                            }
-                    );
+            switch(model.getType()){
+                case "R": {
+                    //REGISTRATION
+                    doRegistration(ps);
                 }
 
-                executor.shutdown();
-            }catch (Exception e){
-                e.printStackTrace();
-            }finally {
-                try{
-                    dg1InputStream.close();
-                }catch(Exception e){
-                    e.printStackTrace();
+                case "L": {
+                    //LOGIN
+                    doLogin(ps);
                 }
-
             }
+
+
+
         }catch (CardServiceException e){
             e.printStackTrace();
         }
         finally {
+
+        }
+    }
+
+    private void doRegistration(PassportService ps) {
+        InputStream dg1InputStream = null;
+        try{
+            InputStream pictureInputStream = null;
+            pictureInputStream = ps.getInputStream(PassportService.EF_DG2);
+            DG2File dg2 = (DG2File)LDSFileUtil.getLDSFile(PassportService.EF_DG2, pictureInputStream);
+
+            Bitmap bmp = BitmapFactory.decodeStream(dg2.getFaceInfos().get(0).getFaceImageInfos().get(0).getImageInputStream());
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            //compress quality -> if too high, method will be slow.
+            bmp.compress(Bitmap.CompressFormat.JPEG, 3, outputStream);
+
+            byte[] mypic = outputStream.toByteArray();
+
+            dg1InputStream = ps.getInputStream(PassportService.EF_DG1);
+            DG1File dg1 = (DG1File)LDSFileUtil.getLDSFile(PassportService.EF_DG1, dg1InputStream);
+
+            String docId = dg1.getMRZInfo().getDocumentNumber();
+
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+            Callable<Response> callable =  new RestRegistration( model.getUrl(), mypic, docId, model.getUserName());
+            Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
+            Response result= future.get();
+
+            if (result.isSuccessful()) {
+
+                Button button = (Button) findViewById(R.id.button_challenge);
+                button.setEnabled(true);
+                button.setText("CLOSE APP AND REDIRECT TO LOGIN");
+
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        NfcActivity.this.finishAffinity();
+                    }
+                });
+
+            }else{
+                Button button = (Button) findViewById(R.id.button_challenge);
+                button.setEnabled(true);
+                button.setText("Registration not successful");
+
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        NfcActivity.this.finishAffinity();
+                    }
+                });
+            }
+            executor.shutdown();
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            try{
+                dg1InputStream.close();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    private void doLogin(PassportService ps) {
+        InputStream dg1InputStream = null;
+        try{
+
+                /*
+                *
+                * TEST
+                * */
+
+               /* InputStream pictureInputStream = null;
+                pictureInputStream = ps.getInputStream(PassportService.EF_DG2);
+                DG2File dg2 = (DG2File)LDSFileUtil.getLDSFile(PassportService.EF_DG2, pictureInputStream);
+
+                Bitmap bmp = BitmapFactory.decodeStream(dg2.getFaceInfos().get(0).getFaceImageInfos().get(0).getImageInputStream());
+
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                //compress quality -> if too high, method will be slow.
+                bmp.compress(Bitmap.CompressFormat.JPEG, 3, outputStream);
+
+                byte[] mypic = outputStream.toByteArray();
+
+                ScheduledExecutorService executor1 = Executors.newScheduledThreadPool(1);
+                Callable<Response> callable1 =  new RestRegistration( model.getIdServerPath(), mypic);
+                Future<Response> future1 = executor1.schedule(callable1, 0, TimeUnit.MILLISECONDS);
+                Response result1= future1.get();*/
+
+
+                /*TEST OVER*/
+
+            dg1InputStream = ps.getInputStream(PassportService.EF_DG1);
+            DG1File dg1 = (DG1File)LDSFileUtil.getLDSFile(PassportService.EF_DG1, dg1InputStream);
+
+            String docId = dg1.getMRZInfo().getDocumentNumber();
+
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+            Callable<Response> callable =  new RestApi(docId, model.getIdServerPath(), model.getUid());
+            Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
+            Response result= future.get();
+
+            if (result.isSuccessful()){
+                startCamera();
+                //TODO: refactor maybe to a new file, this is ugly as hell
+                videoAnalyzer = new VideoAnalyzer(camera.getParameters());
+
+                textView = (TextView)findViewById(R.id.text_challenge);
+                final String challengeMessage = result.body().string();
+
+                Button button = (Button)findViewById(R.id.button_challenge);
+                button.setEnabled(true);
+                //button.setText("CLOSE APP AND REDIRECT TO LOGIN");
+                button.setText("START CHALLENGE");
+
+                button.setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                startCountDown(challengeMessage);
+                            }
+                        }
+                );
+            }
+
+            executor.shutdown();
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            try{
+                dg1InputStream.close();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
 
         }
     }
@@ -248,7 +360,6 @@ public class NfcActivity  extends AppCompatActivity {
                 releaseCamera();
 
                List<VideoFrame> frames = videoAnalyzer.filterFrames();
-                System.out.println(model.getUid());
 
                 ScheduledExecutorService executor = Executors.newScheduledThreadPool(frames.size());
                 List<Response> responses = new ArrayList<Response>();
@@ -373,6 +484,9 @@ public class NfcActivity  extends AppCompatActivity {
         model.setDocument(new IdDocument(preferences.getString(Constants.DOCUMENT_NUMBER, ""), preferences.getString(Constants.EXPIRATION_DATE, ""), preferences.getString(Constants.DATE_OF_BIRTH, "")));
         model.setIdServerPath(preferences.getString(Constants.APP_URL, ""));
         model.setUid(preferences.getString(Constants.UID, ""));
+        model.setType(preferences.getString(Constants.TYPE, ""));
+        model.setUrl(preferences.getString(Constants.URL, ""));
+        model.setUserName(preferences.getString(Constants.USERNAME, ""));
     }
 
     private void releaseCamera(){
