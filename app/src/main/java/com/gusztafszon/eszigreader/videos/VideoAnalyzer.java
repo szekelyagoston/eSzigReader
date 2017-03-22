@@ -22,7 +22,7 @@ import java.util.List;
 
 public class VideoAnalyzer implements IVideoAnalyzer{
 
-    private static final int MAX_SELECTED_FRAMES = 10;
+    private static final int MAX_SELECTED_FRAMES = 15;
 
     private List<VideoFrame> frames = new ArrayList<>();
 
@@ -70,7 +70,7 @@ public class VideoAnalyzer implements IVideoAnalyzer{
             //calculating inputstream
             YuvImage yuv = new YuvImage(frame.getData(), parameters.getPreviewFormat(), width, height, null);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            yuv.compressToJpeg(new Rect(0, 0, width, height), 50, out);
+            yuv.compressToJpeg(new Rect(0, 0, width, height), 100, out);
 
             byte[] bytes = out.toByteArray();
 
@@ -86,7 +86,7 @@ public class VideoAnalyzer implements IVideoAnalyzer{
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             //compress quality -> if too high, method will be slow.
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 3, outputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 20, outputStream);
 
             frame.setProcessedData(outputStream.toByteArray());
             framesForProcessing.add(frame);

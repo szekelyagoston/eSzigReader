@@ -390,7 +390,7 @@ public class NfcActivity  extends AppCompatActivity {
                 }
 
 
-                if (result.isSuccessful()){
+                if (result != null && result.isSuccessful()){
                     Button button = (Button)findViewById(R.id.button_challenge);
                     button.setEnabled(true);
                     button.setText("CLOSE APP AND REDIRECT TO LOGIN");

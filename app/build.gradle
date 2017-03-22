@@ -46,5 +46,5 @@ dependencies {
     compile 'net.sf.scuba:scuba-sc-android:0.0.9';
 
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
-    compile 'com.squareup.okhttp3:okhttp:3.5.0'
+    compile 'com.squareup.okhttp3:okhttp:3.6.0'
 }
