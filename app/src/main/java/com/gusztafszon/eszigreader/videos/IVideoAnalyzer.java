@@ -12,4 +12,6 @@ public interface IVideoAnalyzer {
     List<VideoFrame> getFrames();
 
     List<VideoFrame> filterFrames();
+
+    void resetFrames();
 }

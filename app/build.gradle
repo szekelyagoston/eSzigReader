@@ -8,9 +8,12 @@ android {
         minSdkVersion 16
         targetSdkVersion 24
         versionCode 1
-        versionName "1.0"
+        versionName "1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
+
+
     buildTypes {
         release {
             minifyEnabled false
@@ -42,7 +45,11 @@ dependencies {
     testCompile 'junit:junit:4.12'
     //compile group: 'org.jmrtd', name: 'jmrtd', version: '0.5.11'
     compile 'org.jmrtd:jmrtd:0.5.5'
+    compile 'com.android.support:multidex:1.0.1'
+    //compile 'com.madgag.spongycastle:core:1.54.0.0'
     compile 'com.madgag.spongycastle:prov:1.54.0.0'
+    //compile 'com.madgag.spongycastle:pkix:1.54.0.0'
+    //compile 'com.madgag.spongycastle:pg:1.54.0.0'
     compile 'net.sf.scuba:scuba-sc-android:0.0.9';
 
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'

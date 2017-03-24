@@ -79,7 +79,7 @@ public class VideoAnalyzer implements IVideoAnalyzer{
             int nextIndex = ((int) currentValue) - 1;
 
             final VideoFrame frame = frames.get(nextIndex);
-
+            System.out.println("SIZE BEFORE ANYTHING: ******** (INDEX "+nextIndex+"): "+ frame.getData().length / 1024 + " KB");
             Future f = service.submit( new Thread(new Runnable() {
 
                 public void run() {
@@ -87,9 +87,14 @@ public class VideoAnalyzer implements IVideoAnalyzer{
                     //calculating inputstream
                     YuvImage yuv = new YuvImage(frame.getData(), parameters.getPreviewFormat(), width, height, null);
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    yuv.compressToJpeg(new Rect(0, 0, width, height), 100, out);
+                    yuv.compressToJpeg(new Rect(0, 0, width, height), 0, out);
 
                     byte[] bytes = out.toByteArray();
+                    try {
+                        out.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
                     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     Matrix rotationMatrix = null;
@@ -103,10 +108,18 @@ public class VideoAnalyzer implements IVideoAnalyzer{
 
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     //compress quality -> if too high, method will be slow.
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 20, outputStream);
-
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                    bitmap.recycle();
+                    //Bitmap comperssed = BitmapFactory.decodeStream(new ByteArrayInputStream(outputStream.toByteArray()));
+                    //frame.setProcessedData(outputStream.toByteArray());
                     frame.setProcessedData(outputStream.toByteArray());
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     processedframes.add(frame);
+                    System.out.println("SIZE AFTER : ******** (INDEX ): "+ frame.getProcessedData().length / 1024 + " KB");
                 }
 
             })
@@ -129,5 +142,10 @@ public class VideoAnalyzer implements IVideoAnalyzer{
         service.shutdownNow();
         return processedframes;
 
+    }
+
+    @Override
+    public void resetFrames() {
+        this.processedframes.clear();
     }
 }
