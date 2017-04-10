@@ -3,8 +3,8 @@ package com.gusztafszon.eszigreader.activities;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.hardware.Camera;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
@@ -15,23 +15,22 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.gusztafszon.eszigreader.R;
+import com.gusztafszon.eszigreader.callbacks.BACCallback;
 import com.gusztafszon.eszigreader.constants.Constants;
 import com.gusztafszon.eszigreader.mrtd.registration.model.IdDocument;
 import com.gusztafszon.eszigreader.mrtd.registration.model.MainActivityModel;
-import com.gusztafszon.eszigreader.service.RestApi;
 import com.gusztafszon.eszigreader.service.RestFinishApi;
-import com.gusztafszon.eszigreader.service.RestRegistration;
 import com.gusztafszon.eszigreader.service.RestVideoApi;
 import com.gusztafszon.eszigreader.service.camera.CameraPreview;
+import com.gusztafszon.eszigreader.service.dto.ResultDto;
+import com.gusztafszon.eszigreader.tasks.BACTask;
 import com.gusztafszon.eszigreader.utils.CountDownType;
 import com.gusztafszon.eszigreader.utils.ICountDownEvents;
 import com.gusztafszon.eszigreader.utils.SecondCountDownTimer;
 import com.gusztafszon.eszigreader.videos.IVideoAnalyzer;
-import com.gusztafszon.eszigreader.videos.VideoAnalyzer;
 import com.gusztafszon.eszigreader.videos.VideoFrame;
 
 import net.sf.scuba.smartcards.CardService;
@@ -39,13 +38,8 @@ import net.sf.scuba.smartcards.CardServiceException;
 
 import org.jmrtd.BACKeySpec;
 import org.jmrtd.PassportService;
-import org.jmrtd.lds.DG1File;
-import org.jmrtd.lds.DG2File;
-import org.jmrtd.lds.LDSFileUtil;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,12 +72,15 @@ public class NfcActivity  extends AppCompatActivity {
     private final static Integer TIMEOFCHALLENGE = 20;
     //Means 1/10 sec ->callback will be in every 0,1sec --> that way we will send 20-1(due to the strange countdown bug) frames
     private final static Integer CHALLENGEFRAMECOUNT = 1;
+    private static final String ERROR_COLOR="#FF0000";
+    private static final String SUCCESS_COLOR="#009900";
 
     private Camera camera;
     private CameraPreview cameraPreview;
 
     private TextView textView;
     private SecondCountDownTimer timer;
+    private Button button;
 
     private SharedPreferences preferences;
     private Boolean analyzeRunning = false;
@@ -97,10 +94,11 @@ public class NfcActivity  extends AppCompatActivity {
         preferences = getSharedPreferences(Constants.MY_REFERENCES, 0);
         setCurrentDocumentFromPreferences();
 
-
         setContentView(R.layout.nfcreader);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        textView = (TextView)findViewById(R.id.text_challenge);
 
         //checking whether nfc started this activity
         if (getIntent() == null || getIntent().getExtras() == null) {
@@ -111,20 +109,25 @@ public class NfcActivity  extends AppCompatActivity {
             return;
         }
 
-        Button button = (Button)findViewById(R.id.button_challenge);
+        button = (Button)findViewById(R.id.button_challenge);
         button.setEnabled(false);
-        button.setText("WAITING FOR NFC");
 
-        doNfc(tag);
+        if (model.isLoginValid() || model.isRegistrationValid()){
+            doNfc(tag);
+        }else{
+            textView.setText("Error! App should be launched only from a webpage!");
+            textView.setTextColor(Color.parseColor(ERROR_COLOR));
+            textView.setTypeface(null, Typeface.BOLD);
+        }
+
     }
 
     private void doNfc(Tag tag) {
-        PassportService ps = null;
 
         try {
             IsoDep nfc = IsoDep.get(tag);
             CardService cs = CardService.getInstance(nfc);
-            ps = new PassportService(cs);
+            final PassportService ps = new PassportService(cs);
             ps.open();
 
             ps.sendSelectApplet(false);
@@ -145,21 +148,55 @@ public class NfcActivity  extends AppCompatActivity {
                 }
             };
 
-            ps.doBAC(bacKey);
+            BACTask bacTask = new BACTask(ps, NfcActivity.this, model, new BACCallback() {
+                @Override
+                public void onFinish(final ResultDto dto) {
+                    if (dto.getSuccess()){
 
-            switch(model.getType()){
-                case "R": {
-                    //REGISTRATION
-                    doRegistration(ps);
+                        NfcActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                button.setEnabled(true);
+                                textView.setText("REGISTRATION SUCCESSFUL");
+                                textView.setTextColor(Color.parseColor(SUCCESS_COLOR));
+                                textView.setTypeface(null, Typeface.BOLD);
+
+                                button.setText("BACK TO LOGIN");
+
+                                button.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        NfcActivity.this.finishAffinity();
+                                    }
+                                });
+                            }
+                        });
+
+
+
+                    }else{
+                        NfcActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textView.setText(dto.getMessage());
+                                textView.setTextColor(Color.parseColor(ERROR_COLOR));
+                                textView.setTypeface(null, Typeface.BOLD);
+                                button.setEnabled(true);
+                                button.setText("BACK TO LOGIN");
+                                button.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        NfcActivity.this.finishAffinity();
+                                    }
+                                });
+                            }
+                        });
+                    }
+
                 }
-
-                case "L": {
-                    //LOGIN
-                    doLogin(ps);
-                }
-            }
-
-
+            });
+            bacTask.execute(bacKey);
 
         }catch (CardServiceException e){
             e.printStackTrace();
@@ -169,122 +206,10 @@ public class NfcActivity  extends AppCompatActivity {
         }
     }
 
-    private void doRegistration(PassportService ps) {
-        InputStream dg1InputStream = null;
-        try{
-            InputStream pictureInputStream = null;
-            pictureInputStream = ps.getInputStream(PassportService.EF_DG2);
-            DG2File dg2 = (DG2File)LDSFileUtil.getLDSFile(PassportService.EF_DG2, pictureInputStream);
-
-            Bitmap bmp = BitmapFactory.decodeStream(dg2.getFaceInfos().get(0).getFaceImageInfos().get(0).getImageInputStream());
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            //compress quality -> if too high, method will be slow.
-            bmp.compress(Bitmap.CompressFormat.JPEG, 3, outputStream);
-
-            byte[] mypic = outputStream.toByteArray();
-
-            dg1InputStream = ps.getInputStream(PassportService.EF_DG1);
-            DG1File dg1 = (DG1File)LDSFileUtil.getLDSFile(PassportService.EF_DG1, dg1InputStream);
-
-            String docId = dg1.getMRZInfo().getDocumentNumber();
-
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            Callable<Response> callable =  new RestRegistration( model.getUrl(), mypic, docId, model.getUserName());
-            Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
-            Response result= future.get();
-
-            if (result.isSuccessful()) {
-
-                Button button = (Button) findViewById(R.id.button_challenge);
-                button.setEnabled(true);
-                button.setText("CLOSE APP AND REDIRECT TO LOGIN");
-
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        NfcActivity.this.finishAffinity();
-                    }
-                });
-
-            }else{
-                Button button = (Button) findViewById(R.id.button_challenge);
-                button.setEnabled(true);
-                button.setText("Registration not successful");
-
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        NfcActivity.this.finishAffinity();
-                    }
-                });
-            }
-            executor.shutdown();
-        }catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            try{
-                dg1InputStream.close();
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-
-        }
-    }
-
-    private void doLogin(PassportService ps) {
-        InputStream dg1InputStream = null;
-        try{
-
-            dg1InputStream = ps.getInputStream(PassportService.EF_DG1);
-            DG1File dg1 = (DG1File)LDSFileUtil.getLDSFile(PassportService.EF_DG1, dg1InputStream);
-
-            String docId = dg1.getMRZInfo().getDocumentNumber();
-
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            Callable<Response> callable =  new RestApi(docId, model.getIdServerPath(), model.getUid());
-            Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
-            Response result= future.get();
-
-            if (result.isSuccessful()){
-                startCamera();
-                //TODO: refactor maybe to a new file, this is ugly as hell
-                videoAnalyzer = new VideoAnalyzer(camera.getParameters());
-
-                textView = (TextView)findViewById(R.id.text_challenge);
-                final String challengeMessage = result.body().string();
-
-                Button button = (Button)findViewById(R.id.button_challenge);
-                button.setEnabled(true);
-                //button.setText("CLOSE APP AND REDIRECT TO LOGIN");
-                button.setText("START CHALLENGE");
-
-                button.setOnClickListener(
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                startCountDown(challengeMessage);
-                            }
-                        }
-                );
-            }
-
-            executor.shutdown();
-        }catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            try{
-                dg1InputStream.close();
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-
-        }
-    }
-
     private void startCountDown(final String text) {
 
         textView.setText(text + " in " + Integer.toString(COUNTDOWNSECONDS) + " seconds");
+        textView.setTextColor(Color.BLACK);
         startCountDownTimer(text);
     }
 
@@ -326,11 +251,9 @@ public class NfcActivity  extends AppCompatActivity {
             @Override
             public void onFinish(){
                 analyzeRunning = false;
-                //detectionProgressDialog.setMessage("Processing data");
-                //detectionProgressDialog.show();
-
-                //TEST
                 releaseCamera();
+
+
 
                List<VideoFrame> frames = videoAnalyzer.filterFrames();
 
@@ -350,7 +273,6 @@ public class NfcActivity  extends AppCompatActivity {
                     }
                 }
 
-                ScheduledExecutorService finishExecutor = Executors.newScheduledThreadPool(1);
                 Callable<Response> callable =  new RestFinishApi(model.getIdServerPath(), model.getUid());
                 Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
                 Response result = null;
@@ -364,9 +286,13 @@ public class NfcActivity  extends AppCompatActivity {
 
 
                 if (result != null && result.isSuccessful()){
-                    Button button = (Button)findViewById(R.id.button_challenge);
                     button.setEnabled(true);
-                    button.setText("CLOSE APP AND REDIRECT TO LOGIN");
+
+                    textView.setText("Login successful! \n Click the button to finish login!");
+                    textView.setTextColor(Color.parseColor(SUCCESS_COLOR));
+                    textView.setTypeface(null, Typeface.BOLD);
+
+                    button.setText("RETURN TO LOGIN PAGE");
 
                     button.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -376,10 +302,20 @@ public class NfcActivity  extends AppCompatActivity {
                     });
 
                 }else{
-                    Button button = (Button)findViewById(R.id.button_challenge);
-                    button.setEnabled(false);
-                    button.setText("NOT SUCCESSFULL");
+                    button.setEnabled(true);
+                    textView.setText("Login not successful! \n Click the button to return the main page!");
+                    textView.setTextColor(Color.parseColor(ERROR_COLOR));
+                    textView.setTypeface(null, Typeface.BOLD);
+
+                    button.setText("RETURN TO LOGIN PAGE");
+                    button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            NfcActivity.this.finishAffinity();
+                        }
+                    });
                 }
+
             }
 
 
@@ -396,11 +332,11 @@ public class NfcActivity  extends AppCompatActivity {
                 FrameLayout preview = (FrameLayout)findViewById(R.id.camera_preview);
                 preview.addView(cameraPreview);
             }else{
-                System.out.println("COULD NOT GET CAMERA");
+                textView.setText("ERROR! Could not access to camera!");
             }
 
         }else{
-            System.out.println("WE DONT HAVE CAMERA");
+            textView.setText("ERROR! Camera not found!");
         }
     }
 
@@ -417,7 +353,7 @@ public class NfcActivity  extends AppCompatActivity {
     /** A safe way to get an instance of the Camera object. */
     /**should change to camer2 later, with @module and interface. First make it work*/
     @SuppressWarnings("deprecation")
-    public static Camera getCameraInstance(){
+    public Camera getCameraInstance(){
         Camera c = null;
         try {
             Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
@@ -435,7 +371,7 @@ public class NfcActivity  extends AppCompatActivity {
             }
         }
         catch (Exception e){
-            System.out.println("FRONT CAMERA NOT AVAILABLE");
+            textView.setText("ERROR! Front camera not available!");
         }
         return c; // returns null if camera is unavailable
     }

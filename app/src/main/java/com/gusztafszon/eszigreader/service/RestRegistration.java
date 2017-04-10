@@ -1,5 +1,7 @@
 package com.gusztafszon.eszigreader.service;
 
+import com.gusztafszon.eszigreader.service.dto.RegistrationDto;
+
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -22,16 +24,10 @@ public class RestRegistration implements Callable<Response> {
     private static final MediaType MEDIA_TYPE_MARKDOWN
             = MediaType.parse("image/jpeg");
 
-    private byte[] stream;
-    private String path;
-    private String docId;
-    private String username;
+    private RegistrationDto registrationDto;
 
-    public RestRegistration(String path, byte[] stream, String docId, String username) {
-        this.stream = stream;
-        this.path = path;
-        this.docId = docId;
-        this.username = username;
+    public RestRegistration(RegistrationDto registrationDto) {
+        this.registrationDto = registrationDto;
     }
 
     @Override
@@ -40,13 +36,13 @@ public class RestRegistration implements Callable<Response> {
 
         RequestBody body = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("card", docId)
-                .addFormDataPart("username", username)
-                .addFormDataPart("image", "image", RequestBody.create(MEDIA_TYPE_MARKDOWN, stream))
+                .addFormDataPart("card", registrationDto.getDocId())
+                .addFormDataPart("username", registrationDto.getUsername())
+                .addFormDataPart("image", "image", RequestBody.create(MEDIA_TYPE_MARKDOWN, registrationDto.getStream()))
                 .build();
 
         Request request = new Request.Builder()
-                .url(path + "/" + REGISTER_PATH)
+                .url(registrationDto.getPath() + "/" + REGISTER_PATH)
                 .post(body)
                 .build();
 

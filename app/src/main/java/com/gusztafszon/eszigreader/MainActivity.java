@@ -157,13 +157,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (model.getType() == null){
-            mainDisplayTextView.setText("App should not be runned directly! Please use this app only when logging in or registering to a page!");
+            mainDisplayTextView.setText("App should not be run directly! Please use this app only when logging in or registering to a page!");
             mainDisplayTextView.setTextColor(Color.parseColor(ERROR_COLOR));
             mainDisplayTextView.setTypeface(null, Typeface.BOLD);
         }else{
             switch (model.getType()){
                 case "L" : {
-                    if (model.getIdServerPath() == null || model.getUid() == null){
+                    if (!model.isLoginValid()){
                         mainDisplayTextView.setText("There was an error retrieving parameters, login can not be continued! \nPlease try later!");
                         mainDisplayTextView.setTextColor(Color.parseColor(ERROR_COLOR));
                         mainDisplayTextView.setTypeface(null, Typeface.BOLD);
@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 case "R" : {
-                    if (model.getUrl() == null || model.getUserName() == null){
+                    if (!model.isRegistrationValid()){
                         mainDisplayTextView.setText("There was an error retrieving parameters, registration can not be continued! \nPlease try later!");
                         mainDisplayTextView.setTextColor(Color.parseColor(ERROR_COLOR));
                         mainDisplayTextView.setTypeface(null, Typeface.BOLD);

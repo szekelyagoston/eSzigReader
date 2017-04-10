@@ -1,0 +1,11 @@
+package com.gusztafszon.eszigreader.callbacks;
+
+import com.gusztafszon.eszigreader.service.dto.ResultDto;
+
+/**
+ * Created by Gusztafszon on 2017-04-10.
+ */
+
+public interface BACCallback {
+    void onFinish(ResultDto dto);
+}

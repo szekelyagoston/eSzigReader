@@ -83,4 +83,12 @@ public class MainActivityModel {
     public void setNfcEnabled(boolean nfcEnabled) {
         this.nfcEnabled = nfcEnabled;
     }
+
+    public boolean isLoginValid(){
+        return idServerPath != null && idServerPath != "" && uid != null && uid != "";
+    }
+
+    public boolean isRegistrationValid(){
+        return url != null && url != "" && userName != null && userName != "";
+    }
 }
