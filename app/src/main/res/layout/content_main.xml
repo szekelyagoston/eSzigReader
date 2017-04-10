@@ -20,6 +20,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/document_number"
+                android:textStyle="bold"
                 />
             <TextView
                 android:id="@+id/documentnumber"
@@ -40,6 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/exp_date"
+                android:textStyle="bold"
                 />
             <TextView
                 android:id="@+id/expirationdate"
@@ -59,6 +61,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/date_of_birth"
+                android:textStyle="bold"
                 />
             <TextView
                 android:id="@+id/dateofbirth"
@@ -74,6 +77,7 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/mainDisplayTextView"
         android:layout_marginTop="100dp"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="40dp"

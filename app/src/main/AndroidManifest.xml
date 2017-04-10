@@ -21,7 +21,6 @@
             </intent-filter>
 
             <intent-filter>
-                <!--<data android:scheme="com.egroup.facelogin" />-->
                 <data android:scheme="com.egroup.facelogin" android:host="invoice" android:path="/"/>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.BROWSABLE" />

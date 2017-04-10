@@ -19,6 +19,9 @@ public class MRTDRegistrationDto {
     }
 
     private String formatDateToString(Date dateFormat) {
+        if (dateFormat == null){
+            return null;
+        }
         Calendar cal = Calendar.getInstance();
         cal.setTime(dateFormat);
         StringBuilder builder = new StringBuilder();

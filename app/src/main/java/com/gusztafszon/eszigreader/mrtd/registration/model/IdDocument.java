@@ -28,24 +28,12 @@ public class IdDocument {
         return documentNumber;
     }
 
-    public void setDocumentNumber(String documentNumber) {
-        this.documentNumber = documentNumber;
-    }
-
     public String getExpirationDate() {
         return expirationDate;
     }
 
-    public void setExpirationDate(String expirationDate) {
-        this.expirationDate = expirationDate;
-    }
-
     public String getDateOfBirth() {
         return dateOfBirth;
-    }
-
-    public void setDateOfBirth(String dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
     }
 
     public String getFormattedExpirationDate(){
@@ -57,6 +45,9 @@ public class IdDocument {
     }
 
     private String formatToDateFormat(String string) {
+        if (string == null){
+            return null;
+        }
         if (string.length() == 6){
             StringBuilder builder = new StringBuilder();
             builder.append(string.substring(0, 2));
@@ -70,5 +61,9 @@ public class IdDocument {
 
         return "";
 
+    }
+
+    public boolean isValid() {
+        return dateOfBirth != null && dateOfBirth != "" && expirationDate != null && expirationDate != "" && documentNumber != null && documentNumber != "" ;
     }
 }

@@ -22,6 +22,8 @@ public class MainActivityModel {
 
     private String userName;
 
+    private boolean nfcEnabled;
+
     public IdDocument getDocument() {
         return document;
     }
@@ -72,5 +74,13 @@ public class MainActivityModel {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public boolean isNfcEnabled() {
+        return nfcEnabled;
+    }
+
+    public void setNfcEnabled(boolean nfcEnabled) {
+        this.nfcEnabled = nfcEnabled;
     }
 }

@@ -86,7 +86,6 @@ public class NfcActivity  extends AppCompatActivity {
     private SecondCountDownTimer timer;
 
     private SharedPreferences preferences;
-    private ImageView imageView;
     private Boolean analyzeRunning = false;
 
     private IVideoAnalyzer videoAnalyzer;
@@ -147,7 +146,6 @@ public class NfcActivity  extends AppCompatActivity {
             };
 
             ps.doBAC(bacKey);
-
 
             switch(model.getType()){
                 case "R": {
@@ -237,31 +235,6 @@ public class NfcActivity  extends AppCompatActivity {
     private void doLogin(PassportService ps) {
         InputStream dg1InputStream = null;
         try{
-
-                /*
-                *
-                * TEST
-                * */
-
-               /* InputStream pictureInputStream = null;
-                pictureInputStream = ps.getInputStream(PassportService.EF_DG2);
-                DG2File dg2 = (DG2File)LDSFileUtil.getLDSFile(PassportService.EF_DG2, pictureInputStream);
-
-                Bitmap bmp = BitmapFactory.decodeStream(dg2.getFaceInfos().get(0).getFaceImageInfos().get(0).getImageInputStream());
-
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                //compress quality -> if too high, method will be slow.
-                bmp.compress(Bitmap.CompressFormat.JPEG, 3, outputStream);
-
-                byte[] mypic = outputStream.toByteArray();
-
-                ScheduledExecutorService executor1 = Executors.newScheduledThreadPool(1);
-                Callable<Response> callable1 =  new RestRegistration( model.getIdServerPath(), mypic);
-                Future<Response> future1 = executor1.schedule(callable1, 0, TimeUnit.MILLISECONDS);
-                Response result1= future1.get();*/
-
-
-                /*TEST OVER*/
 
             dg1InputStream = ps.getInputStream(PassportService.EF_DG1);
             DG1File dg1 = (DG1File)LDSFileUtil.getLDSFile(PassportService.EF_DG1, dg1InputStream);

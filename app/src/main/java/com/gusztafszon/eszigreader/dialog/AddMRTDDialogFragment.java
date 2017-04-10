@@ -13,6 +13,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 
 import com.gusztafszon.eszigreader.R;
+import com.gusztafszon.eszigreader.constants.Constants;
 import com.gusztafszon.eszigreader.interfaces.IFragmentResult;
 import com.gusztafszon.eszigreader.mrtd.registration.dto.MRTDRegistrationDto;
 
@@ -42,6 +43,10 @@ public class AddMRTDDialogFragment extends DialogFragment {
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
+        final String documentNumber = getArguments().getString(Constants.DOCUMENT_NUMBER);
+        String expirationDate = getArguments().getString(Constants.EXPIRATION_DATE);
+        String birthDate = getArguments().getString(Constants.DATE_OF_BIRTH);
+
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
         builder.setView(inflater.inflate(R.layout.dialog_add_mrtd, null))
@@ -50,7 +55,8 @@ public class AddMRTDDialogFragment extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Dialog d = getDialog();
-                        EditText docNumber = (EditText)  d.findViewById(R.id.document_number);
+                        EditText docNumber = (EditText)d.findViewById(R.id.document_number);
+                        //docNumber.setText(documentNumber);
                         callback.onResult(new MRTDRegistrationDto(docNumber.getText().toString(), expDate, dateOfBirth));
                     }
                 })
@@ -88,7 +94,7 @@ public class AddMRTDDialogFragment extends DialogFragment {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear,
                                   int dayOfMonth) {
-                // TODO Auto-generated method stub
+
                 cal.set(Calendar.YEAR, year);
                 cal.set(Calendar.MONTH, monthOfYear);
                 cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
