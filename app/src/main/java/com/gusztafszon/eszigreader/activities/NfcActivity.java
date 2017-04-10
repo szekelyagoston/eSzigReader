@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.gusztafszon.eszigreader.R;
 import com.gusztafszon.eszigreader.callbacks.BACCallback;
+import com.gusztafszon.eszigreader.callbacks.IChallengeCallback;
 import com.gusztafszon.eszigreader.constants.Constants;
 import com.gusztafszon.eszigreader.mrtd.registration.model.IdDocument;
 import com.gusztafszon.eszigreader.mrtd.registration.model.MainActivityModel;
@@ -27,6 +28,7 @@ import com.gusztafszon.eszigreader.service.RestVideoApi;
 import com.gusztafszon.eszigreader.service.camera.CameraPreview;
 import com.gusztafszon.eszigreader.service.dto.ResultDto;
 import com.gusztafszon.eszigreader.tasks.BACTask;
+import com.gusztafszon.eszigreader.tasks.ChallengeTask;
 import com.gusztafszon.eszigreader.utils.CountDownType;
 import com.gusztafszon.eszigreader.utils.ICountDownEvents;
 import com.gusztafszon.eszigreader.utils.SecondCountDownTimer;
@@ -318,67 +320,55 @@ public class NfcActivity  extends AppCompatActivity {
                 releaseCamera();
 
 
+                ChallengeTask challengeTask = new ChallengeTask(NfcActivity.this, model, videoAnalyzer, new IChallengeCallback() {
+                    @Override
+                    public void onResult(Boolean success) {
+                        if (success){
+                            NfcActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    button.setEnabled(true);
 
-               List<VideoFrame> frames = videoAnalyzer.filterFrames();
+                                    textView.setText("Login successful! \n Click the button to finish login!");
+                                    textView.setTextColor(Color.parseColor(SUCCESS_COLOR));
+                                    textView.setTypeface(null, Typeface.BOLD);
 
-                ScheduledExecutorService executor = Executors.newScheduledThreadPool(frames.size());
-                List<Response> responses = new ArrayList<Response>();
-                for (VideoFrame frame : frames){
-                    Callable<Response> callable =  new RestVideoApi(model.getIdServerPath(), model.getUid(), frame.getProcessedData());
-                    Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
-                    Response result = null;
-                    try {
-                        result= future.get();
-                        responses.add(result);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
+                                    button.setText("RETURN TO LOGIN PAGE");
+
+                                    button.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            NfcActivity.this.finishAffinity();
+                                        }
+                                    });
+                                }
+                            });
+
+
+                        }else{
+                            NfcActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    button.setEnabled(true);
+                                    textView.setText("Login not successful! \n Click the button to return the main page!");
+                                    textView.setTextColor(Color.parseColor(ERROR_COLOR));
+                                    textView.setTypeface(null, Typeface.BOLD);
+
+                                    button.setText("RETURN TO LOGIN PAGE");
+                                    button.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            NfcActivity.this.finishAffinity();
+                                        }
+                                    });
+                                }
+                            });
+
+                        }
                     }
-                }
+                });
 
-                Callable<Response> callable =  new RestFinishApi(model.getIdServerPath(), model.getUid());
-                Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
-                Response result = null;
-                try {
-                    result = future.get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-
-
-                if (result != null && result.isSuccessful()){
-                    button.setEnabled(true);
-
-                    textView.setText("Login successful! \n Click the button to finish login!");
-                    textView.setTextColor(Color.parseColor(SUCCESS_COLOR));
-                    textView.setTypeface(null, Typeface.BOLD);
-
-                    button.setText("RETURN TO LOGIN PAGE");
-
-                    button.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            NfcActivity.this.finishAffinity();
-                        }
-                    });
-
-                }else{
-                    button.setEnabled(true);
-                    textView.setText("Login not successful! \n Click the button to return the main page!");
-                    textView.setTextColor(Color.parseColor(ERROR_COLOR));
-                    textView.setTypeface(null, Typeface.BOLD);
-
-                    button.setText("RETURN TO LOGIN PAGE");
-                    button.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            NfcActivity.this.finishAffinity();
-                        }
-                    });
-                }
+                challengeTask.execute();
 
             }
 
