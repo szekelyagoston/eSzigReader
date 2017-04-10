@@ -31,6 +31,7 @@ import com.gusztafszon.eszigreader.utils.CountDownType;
 import com.gusztafszon.eszigreader.utils.ICountDownEvents;
 import com.gusztafszon.eszigreader.utils.SecondCountDownTimer;
 import com.gusztafszon.eszigreader.videos.IVideoAnalyzer;
+import com.gusztafszon.eszigreader.videos.VideoAnalyzer;
 import com.gusztafszon.eszigreader.videos.VideoFrame;
 
 import net.sf.scuba.smartcards.CardService;
@@ -151,48 +152,23 @@ public class NfcActivity  extends AppCompatActivity {
             BACTask bacTask = new BACTask(ps, NfcActivity.this, model, new BACCallback() {
                 @Override
                 public void onFinish(final ResultDto dto) {
-                    if (dto.getSuccess()){
+                    switch (model.getType()){
+                        case "R": {
+                            finishRegistration(dto);
+                            break;
+                        }
+                        case "L" : {
+                            NfcActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    finishLoginFirstStep(dto);
+                                }
+                            });
 
-                        NfcActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-
-                                button.setEnabled(true);
-                                textView.setText("REGISTRATION SUCCESSFUL");
-                                textView.setTextColor(Color.parseColor(SUCCESS_COLOR));
-                                textView.setTypeface(null, Typeface.BOLD);
-
-                                button.setText("BACK TO LOGIN");
-
-                                button.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        NfcActivity.this.finishAffinity();
-                                    }
-                                });
-                            }
-                        });
-
-
-
-                    }else{
-                        NfcActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                textView.setText(dto.getMessage());
-                                textView.setTextColor(Color.parseColor(ERROR_COLOR));
-                                textView.setTypeface(null, Typeface.BOLD);
-                                button.setEnabled(true);
-                                button.setText("BACK TO LOGIN");
-                                button.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        NfcActivity.this.finishAffinity();
-                                    }
-                                });
-                            }
-                        });
+                            break;
+                        }
                     }
+
 
                 }
             });
@@ -203,6 +179,94 @@ public class NfcActivity  extends AppCompatActivity {
         }
         finally {
 
+        }
+    }
+
+    private void finishLoginFirstStep(ResultDto dto) {
+        if (dto.getSuccess()){
+            startCamera();
+            videoAnalyzer = new VideoAnalyzer(camera.getParameters());
+
+            final String challengeMessage = dto.getMessage();
+
+            button.setEnabled(true);
+
+            textView.setText("First step successful! \n Click the button to start challenge!");
+            textView.setTextColor(Color.parseColor(SUCCESS_COLOR));
+            textView.setTypeface(null, Typeface.BOLD);
+
+            button.setText("START CHALLENGE");
+
+            button.setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startCountDown(challengeMessage);
+                            button.setEnabled(false);
+                        }
+                    }
+            );
+        }else{
+            button.setEnabled(true);
+
+            textView.setText(dto.getMessage());
+            textView.setTextColor(Color.parseColor(ERROR_COLOR));
+            textView.setTypeface(null, Typeface.BOLD);
+
+            button.setText("BACK TO LOGIN");
+
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    NfcActivity.this.finishAffinity();
+                }
+            });
+        }
+        videoAnalyzer.resetFrames();
+    }
+
+    private void finishRegistration(final ResultDto dto) {
+        if (dto.getSuccess()){
+
+            NfcActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    button.setEnabled(true);
+                    textView.setText("REGISTRATION SUCCESSFUL");
+                    textView.setTextColor(Color.parseColor(SUCCESS_COLOR));
+                    textView.setTypeface(null, Typeface.BOLD);
+
+                    button.setText("BACK TO LOGIN");
+
+                    button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            NfcActivity.this.finishAffinity();
+                        }
+                    });
+                }
+            });
+
+
+
+        }else{
+            NfcActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    textView.setText(dto.getMessage());
+                    textView.setTextColor(Color.parseColor(ERROR_COLOR));
+                    textView.setTypeface(null, Typeface.BOLD);
+                    button.setEnabled(true);
+                    button.setText("BACK TO LOGIN");
+                    button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            NfcActivity.this.finishAffinity();
+                        }
+                    });
+                }
+            });
         }
     }
 
@@ -332,11 +396,13 @@ public class NfcActivity  extends AppCompatActivity {
                 FrameLayout preview = (FrameLayout)findViewById(R.id.camera_preview);
                 preview.addView(cameraPreview);
             }else{
+
                 textView.setText("ERROR! Could not access to camera!");
+
             }
 
         }else{
-            textView.setText("ERROR! Camera not found!");
+               textView.setText("ERROR! Camera not found!");
         }
     }
 

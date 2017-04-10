@@ -75,17 +75,19 @@ public class BACTask extends AsyncTask<BACKeySpec, Void, ResultDto>{
             case "R": {
                 //REGISTRATION
                 Response result = doRegistration(ps);
+                if (result.isSuccessful()){
+                    callback.onFinish(new ResultDto(true));
+                }
                 break;
             }
 
             case "L": {
                 //LOGIN
-                //doLogin(ps);
+                doLogin(ps);
                 break;
             }
         }
 
-        callback.onFinish(new ResultDto(true));
         return null;
     }
 
@@ -162,7 +164,7 @@ public class BACTask extends AsyncTask<BACKeySpec, Void, ResultDto>{
         return result;
     }
 
-    /*private void doLogin(PassportService ps) {
+    private void doLogin(PassportService ps) {
         InputStream dg1InputStream = null;
         try{
 
@@ -177,57 +179,20 @@ public class BACTask extends AsyncTask<BACKeySpec, Void, ResultDto>{
             Response result= future.get();
 
             if (result.isSuccessful()){
-                startCamera();
-                videoAnalyzer = new VideoAnalyzer(camera.getParameters());
-
-                final String challengeMessage = result.body().string();
-
-                button.setEnabled(true);
-
-                textView.setText("First step successful! \n Click the button to start challenge!");
-                textView.setTextColor(Color.parseColor(SUCCESS_COLOR));
-                textView.setTypeface(null, Typeface.BOLD);
-
-                button.setText("START CHALLENGE");
-
-                button.setOnClickListener(
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                startCountDown(challengeMessage);
-                                button.setEnabled(false);
-                            }
-                        }
-                );
+                callback.onFinish(new ResultDto(true, result.body().string()));
             }else{
-                button.setEnabled(true);
-
-                textView.setText("LOGIN STEP WAS NOT SUCCESSFUL");
-                textView.setTextColor(Color.parseColor(ERROR_COLOR));
-                textView.setTypeface(null, Typeface.BOLD);
-
-                button.setText("BACK TO LOGIN");
-
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        NfcActivity.this.finishAffinity();
-                    }
-                });
+                callback.onFinish(new ResultDto(false, "Document not accepted!"));
             }
-
             executor.shutdown();
         }catch (Exception e){
-
+            new ResultDto(false, "Unknown error happened!");
             e.printStackTrace();
         }finally {
             try{
-                videoAnalyzer.resetFrames();
                 dg1InputStream.close();
             }catch(Exception e){
                 e.printStackTrace();
             }
-
         }
-    }*/
+    }
 }
