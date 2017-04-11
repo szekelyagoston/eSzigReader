@@ -80,14 +80,17 @@ public class VideoAnalyzer implements IVideoAnalyzer{
 
             final VideoFrame frame = frames.get(nextIndex);
             System.out.println("SIZE BEFORE ANYTHING: ******** (INDEX "+nextIndex+"): "+ frame.getData().length / 1024 + " KB");
+
+
+
             Future f = service.submit( new Thread(new Runnable() {
 
                 public void run() {
-
+                    int compressLevel = findingCompressLevel(frame.getData().length);
                     //calculating inputstream
                     YuvImage yuv = new YuvImage(frame.getData(), parameters.getPreviewFormat(), width, height, null);
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    yuv.compressToJpeg(new Rect(0, 0, width, height), 0, out);
+                    yuv.compressToJpeg(new Rect(0, 0, width, height), compressLevel, out);
 
                     byte[] bytes = out.toByteArray();
                     try {
@@ -143,6 +146,18 @@ public class VideoAnalyzer implements IVideoAnalyzer{
         return processedframes;
 
     }
+
+
+    private int findingCompressLevel(int length) {
+        if ((length / 1024) > 1000){
+            //for my LG phone
+            return 1;
+        }else{
+            //fro Szilvika phone
+            return 100;
+        }
+    }
+
 
     @Override
     public void resetFrames() {

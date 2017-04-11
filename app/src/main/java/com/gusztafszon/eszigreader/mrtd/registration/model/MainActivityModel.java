@@ -85,10 +85,10 @@ public class MainActivityModel {
     }
 
     public boolean isLoginValid(){
-        return idServerPath != null && idServerPath != "" && uid != null && uid != "";
+        return idServerPath != null && !idServerPath.equals("") && uid != null && !uid.equals("");
     }
 
     public boolean isRegistrationValid(){
-        return url != null && url != "" && userName != null && userName != "";
+        return url != null && !url.equals("") && userName != null && !userName.equals("");
     }
 }

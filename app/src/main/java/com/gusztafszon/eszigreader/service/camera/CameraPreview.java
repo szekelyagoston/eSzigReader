@@ -23,7 +23,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private int videoHeight = 800;
     private int videoWidth = 600;
 
-    public CameraPreview(Context context, Camera camera) {
+    private Camera.PreviewCallback cb;
+
+    public CameraPreview(Context context, Camera camera, Camera.PreviewCallback cb) {
         super(context);
         this.camera = camera;
 
@@ -33,17 +35,17 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         holder.addCallback(this);
 
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
+        this.cb = cb;
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         try {
-            camera.setPreviewDisplay(holder);
-            camera.setDisplayOrientation(DISPLAY_ORIENTATION);
-            camera.startPreview();
+
             ViewGroup.LayoutParams params = this.getLayoutParams();
-            List<Camera.Size> sizes = camera.getParameters().getSupportedPictureSizes();
+
+            Camera.Parameters cameraParams = camera.getParameters();
+            List<Camera.Size> sizes = cameraParams.getSupportedPictureSizes();
 
             holder.getSurfaceFrame().width();
             holder.getSurfaceFrame().height();
@@ -57,6 +59,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             Boolean l = false;
             for(Camera.Size size : sizes){
                 //finding the greatest height which is smaller than maxheight
+                System.out.println(size.height + ":" + size.width);
                 if (size.width <= maxheight && size.height <= maxwidth && currentMaxHeight <= size.width){
                     currentMaxHeight = maxwidth;
                     videoWidth = size.height;
@@ -68,8 +71,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             params.width = videoWidth;
 
 
-            camera.getParameters().setPictureSize(videoWidth, videoHeight);
+            cameraParams.setPictureSize(videoHeight, videoWidth);
+            camera.setParameters(cameraParams);
+            System.out.println("Height : "  + videoHeight);
+            System.out.println("Width : "  + videoWidth);
             this.setLayoutParams(params);
+
+            camera.setPreviewDisplay(holder);
+            camera.setDisplayOrientation(DISPLAY_ORIENTATION);
+            camera.startPreview();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -91,6 +101,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         try {
             camera.setPreviewDisplay(holder);
+            camera.setPreviewCallback(cb);
             camera.setDisplayOrientation(DISPLAY_ORIENTATION);
             camera.startPreview();
         } catch (Exception e){

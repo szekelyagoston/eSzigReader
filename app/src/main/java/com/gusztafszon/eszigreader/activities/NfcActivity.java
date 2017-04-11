@@ -115,6 +115,11 @@ public class NfcActivity  extends AppCompatActivity {
         button = (Button)findViewById(R.id.button_challenge);
         button.setEnabled(false);
 
+        if (model.getType().equals("R")){
+            button.setVisibility(View.GONE);
+        }
+
+
         if (model.isLoginValid() || model.isRegistrationValid()){
             doNfc(tag);
         }else{
@@ -233,7 +238,7 @@ public class NfcActivity  extends AppCompatActivity {
             NfcActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-
+                    button.setVisibility(View.VISIBLE);
                     button.setEnabled(true);
                     textView.setText("REGISTRATION SUCCESSFUL");
                     textView.setTextColor(Color.parseColor(SUCCESS_COLOR));
@@ -256,6 +261,7 @@ public class NfcActivity  extends AppCompatActivity {
             NfcActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    button.setVisibility(View.VISIBLE);
                     textView.setText(dto.getMessage());
                     textView.setTextColor(Color.parseColor(ERROR_COLOR));
                     textView.setTypeface(null, Typeface.BOLD);
@@ -381,7 +387,7 @@ public class NfcActivity  extends AppCompatActivity {
         if (checkCameraHardware(getApplicationContext())){
             camera = getCameraInstance();
             if (camera != null){
-                cameraPreview = new CameraPreview(this, camera);
+                cameraPreview = new CameraPreview(this, camera, previewCallback);
                 camera.setPreviewCallback(previewCallback);
                 FrameLayout preview = (FrameLayout)findViewById(R.id.camera_preview);
                 preview.addView(cameraPreview);
