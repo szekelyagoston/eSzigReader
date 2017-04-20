@@ -71,18 +71,22 @@ public class ChallengeTask extends AsyncTask<Void, Void, Void> {
         Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
         Response result = null;
         try {
-            result = future.get();
+            result = future.get(100, TimeUnit.SECONDS);
             cb.onResult(new ResultDto(result.isSuccessful(), result.body().string()));
         } catch (InterruptedException e) {
-            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
             e.printStackTrace();
+            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
+
         } catch (ExecutionException e) {
-            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
             e.printStackTrace();
+            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
+
         } catch (IOException e) {
-            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
             e.printStackTrace();
+            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
+
         }catch(Exception e){
+            e.printStackTrace();
             cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
         }
 
