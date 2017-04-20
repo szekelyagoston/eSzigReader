@@ -75,7 +75,10 @@ public class BACTask extends AsyncTask<BACKeySpec, Void, ResultDto>{
             case "R": {
                 //REGISTRATION
                 Response result = doRegistration(ps);
-                if (result.isSuccessful()){
+                if (result == null){
+                    callback.onFinish(new ResultDto(false, "Error! Could not authenticate card!"));
+                }
+                if (result != null && result.isSuccessful()){
                     callback.onFinish(new ResultDto(true));
                 }
                 break;
@@ -155,7 +158,10 @@ public class BACTask extends AsyncTask<BACKeySpec, Void, ResultDto>{
             e.printStackTrace();
         }finally {
             try{
-                dg1InputStream.close();
+                if (dg1InputStream != null){
+                    dg1InputStream.close();
+                }
+
             }catch(Exception e){
                 e.printStackTrace();
             }
@@ -186,7 +192,9 @@ public class BACTask extends AsyncTask<BACKeySpec, Void, ResultDto>{
             e.printStackTrace();
         }finally {
             try{
-                dg1InputStream.close();
+                if (dg1InputStream != null){
+                    dg1InputStream.close();
+                }
             }catch(Exception e){
                 e.printStackTrace();
             }
