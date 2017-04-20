@@ -229,7 +229,10 @@ public class NfcActivity  extends AppCompatActivity {
                 }
             });
         }
-        videoAnalyzer.resetFrames();
+        if (videoAnalyzer != null){
+            videoAnalyzer.resetFrames();
+        }
+
     }
 
     private void finishRegistration(final ResultDto dto) {
@@ -328,8 +331,8 @@ public class NfcActivity  extends AppCompatActivity {
 
                 ChallengeTask challengeTask = new ChallengeTask(NfcActivity.this, model, videoAnalyzer, new IChallengeCallback() {
                     @Override
-                    public void onResult(Boolean success) {
-                        if (success){
+                    public void onResult(final ResultDto result) {
+                        if (result.getSuccess()){
                             NfcActivity.this.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -356,7 +359,7 @@ public class NfcActivity  extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     button.setEnabled(true);
-                                    textView.setText("Login not successful! \n Click the button to return the main page!");
+                                    textView.setText("Login not successful! \n " + result.getMessage() + "\n Click the button to return the main page!");
                                     textView.setTextColor(Color.parseColor(ERROR_COLOR));
                                     textView.setTypeface(null, Typeface.BOLD);
 

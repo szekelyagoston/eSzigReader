@@ -13,6 +13,7 @@ import com.gusztafszon.eszigreader.service.dto.ResultDto;
 import com.gusztafszon.eszigreader.videos.IVideoAnalyzer;
 import com.gusztafszon.eszigreader.videos.VideoFrame;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -71,14 +72,20 @@ public class ChallengeTask extends AsyncTask<Void, Void, Void> {
         Response result = null;
         try {
             result = future.get();
-            cb.onResult(result.isSuccessful());
+            cb.onResult(new ResultDto(result.isSuccessful(), result.body().string()));
         } catch (InterruptedException e) {
-            cb.onResult(false);
+            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
             e.printStackTrace();
         } catch (ExecutionException e) {
-            cb.onResult(false);
+            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
             e.printStackTrace();
+        } catch (IOException e) {
+            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
+            e.printStackTrace();
+        }catch(Exception e){
+            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
         }
+
         return null;
     }
 

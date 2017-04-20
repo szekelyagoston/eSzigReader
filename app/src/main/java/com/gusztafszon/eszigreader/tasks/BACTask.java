@@ -178,11 +178,8 @@ public class BACTask extends AsyncTask<BACKeySpec, Void, ResultDto>{
             Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
             Response result= future.get();
 
-            if (result.isSuccessful()){
-                callback.onFinish(new ResultDto(true, result.body().string()));
-            }else{
-                callback.onFinish(new ResultDto(false, "Document not accepted!"));
-            }
+            callback.onFinish(new ResultDto(result.isSuccessful(), result.body().string()));
+
             executor.shutdown();
         }catch (Exception e){
             new ResultDto(false, "Unknown error happened!");
