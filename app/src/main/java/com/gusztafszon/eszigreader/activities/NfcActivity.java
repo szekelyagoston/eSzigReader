@@ -179,7 +179,14 @@ public class NfcActivity  extends AppCompatActivity {
 
                 }
             });
-            bacTask.execute(bacKey);
+            if (model.getDocument().isValid()){
+                bacTask.execute(bacKey);
+            }else{
+                textView.setText("Error! Not every card data is provided!");
+                textView.setTextColor(Color.parseColor(ERROR_COLOR));
+                textView.setTypeface(null, Typeface.BOLD);
+            }
+
 
         }catch (CardServiceException e){
             e.printStackTrace();

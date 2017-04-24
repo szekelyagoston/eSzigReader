@@ -28,6 +28,7 @@ import org.jmrtd.lds.DG2File;
 import org.jmrtd.lds.LDSFileUtil;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -124,7 +125,10 @@ public class BACTask extends AsyncTask<BACKeySpec, Void, ResultDto>{
             DG2File dg2 = (DG2File) LDSFileUtil.getLDSFile(PassportService.EF_DG2, pictureInputStream);
 
             Bitmap bmp = BitmapFactory.decodeStream(dg2.getFaceInfos().get(0).getFaceImageInfos().get(0).getImageInputStream());
-
+            if (bmp == null){
+                callback.onFinish(new ResultDto(false, "Registration was not successful!"));
+                return result;
+            }
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             //compress quality -> if too high, method will be slow.
             bmp.compress(Bitmap.CompressFormat.JPEG, 3, outputStream);
@@ -166,6 +170,13 @@ public class BACTask extends AsyncTask<BACKeySpec, Void, ResultDto>{
                 e.printStackTrace();
             }
 
+        }
+        if (!result.isSuccessful()){
+            try {
+                callback.onFinish(new ResultDto(false, result.body().string()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return result;
     }
