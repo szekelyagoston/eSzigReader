@@ -70,6 +70,7 @@ public class BACTask extends AsyncTask<BACKeySpec, Void, ResultDto>{
 
         } catch (CardServiceException e) {
             callback.onFinish(new ResultDto(false, "Error! Could not authenticate card!"));
+            return null;
         }
 
         switch(model.getType()){
