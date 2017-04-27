@@ -25,10 +25,10 @@ public class RestFinishApi implements Callable<Response> {
     private String idServerPath;
     private String uid;
 
+
     public  RestFinishApi(String idServerPath, String uid){
         this.idServerPath = idServerPath;
         this.uid = uid;
-
     }
 
 

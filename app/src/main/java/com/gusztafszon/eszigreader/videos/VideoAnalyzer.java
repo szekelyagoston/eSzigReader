@@ -14,11 +14,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Gusztafszon on 2017-03-20.
@@ -26,7 +28,7 @@ import java.util.concurrent.Future;
 
 public class VideoAnalyzer implements IVideoAnalyzer{
 
-    private static final int MAX_SELECTED_FRAMES = 15;
+    private static final int MAX_SELECTED_FRAMES = 6;
 
     private List<VideoFrame> frames = new ArrayList<>();
 
@@ -53,7 +55,7 @@ public class VideoAnalyzer implements IVideoAnalyzer{
     }
 
     @Override
-    public List<VideoFrame> filterFrames() {
+    public List<VideoFrame> filterFrames(final int compressLevel) {
 
         // a potentially  time consuming task
         //maximum MAX_SELECTED_FRAMES frames should be selected
@@ -78,54 +80,54 @@ public class VideoAnalyzer implements IVideoAnalyzer{
             currentValue = currentValue + steps;
             int nextIndex = ((int) currentValue) - 1;
 
-            final VideoFrame frame = frames.get(nextIndex);
-            System.out.println("SIZE BEFORE ANYTHING: ******** (INDEX "+nextIndex+"): "+ frame.getData().length / 1024 + " KB");
-
-
-
+            final VideoFrame frame = new VideoFrame(frames.get(nextIndex).getData(), i);
+            System.out.println("SIZE BEFORE ANYTHING: ******** : "+ frame.getData().length / 1024 + " KB");
             Future f = service.submit( new Thread(new Runnable() {
 
-                public void run() {
-                    int compressLevel = findingCompressLevel(frame.getData().length);
-                    //calculating inputstream
-                    YuvImage yuv = new YuvImage(frame.getData(), parameters.getPreviewFormat(), width, height, null);
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    yuv.compressToJpeg(new Rect(0, 0, width, height), compressLevel, out);
+                        public void run() {
+                            //int compressLevel = findingCompressLevel(frame.getData().length);
+                            //calculating inputstream
+                            Date start = new Date();
+                            YuvImage yuv = new YuvImage(frame.getData(), parameters.getPreviewFormat(), width, height, null);
+                            ByteArrayOutputStream out = new ByteArrayOutputStream();
+                            yuv.compressToJpeg(new Rect(0, 0, width, height), compressLevel, out);
 
-                    byte[] bytes = out.toByteArray();
-                    try {
-                        out.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                            byte[] bytes = out.toByteArray();
+                            try {
+                                out.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
 
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    Matrix rotationMatrix = null;
-                    try {
-                        rotationMatrix = OrientationHelper.rotate270();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    bitmap = BitmapProducer.CreateBitmap(bitmap, rotationMatrix);
-                    bitmap = BitmapProducer.MirrorBitmap(bitmap);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            Matrix rotationMatrix = null;
+                            try {
+                                rotationMatrix = OrientationHelper.rotate270();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            bitmap = BitmapProducer.CreateBitmap(bitmap, rotationMatrix);
+                            bitmap = BitmapProducer.MirrorBitmap(bitmap);
 
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    //compress quality -> if too high, method will be slow.
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-                    bitmap.recycle();
-                    //Bitmap comperssed = BitmapFactory.decodeStream(new ByteArrayInputStream(outputStream.toByteArray()));
-                    //frame.setProcessedData(outputStream.toByteArray());
-                    frame.setProcessedData(outputStream.toByteArray());
-                    try {
-                        outputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    processedframes.add(frame);
-                    System.out.println("SIZE AFTER : ******** (INDEX ): "+ frame.getProcessedData().length / 1024 + " KB");
-                }
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                            //compress quality -> if too high, method will be slow.
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                            bitmap.recycle();
+                            //Bitmap comperssed = BitmapFactory.decodeStream(new ByteArrayInputStream(outputStream.toByteArray()));
+                            //frame.setProcessedData(outputStream.toByteArray());
+                            frame.setProcessedData(outputStream.toByteArray());
+                            try {
+                                outputStream.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            frame.setProcessedMilliSec(getDateDiff(start, new Date(), TimeUnit.MILLISECONDS));
+                            processedframes.add(frame);
 
-            })
+                            System.out.println("SIZE AFTER : ******** (INDEX ): " + frame.getProcessedData().length / 1024 + " KB");
+                        }
+
+                    })
             );
 
             futures.add(f);
@@ -148,7 +150,7 @@ public class VideoAnalyzer implements IVideoAnalyzer{
     }
 
 
-    private int findingCompressLevel(int length) {
+    /*private int findingCompressLevel(int length) {
         if ((length / 1024) > 1000){
             //for my LG phone
             return 1;
@@ -156,8 +158,13 @@ public class VideoAnalyzer implements IVideoAnalyzer{
             //fro Szilvika phone
             return 100;
         }
-    }
+    }*/
 
+
+    public static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
+        long diffInMillies = date2.getTime() - date1.getTime();
+        return timeUnit.convert(diffInMillies,TimeUnit.MILLISECONDS);
+    }
 
     @Override
     public void resetFrames() {

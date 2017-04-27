@@ -9,9 +9,12 @@ import java.io.ByteArrayInputStream;
 public class VideoFrame {
     private byte[] data;
     private byte[] processedData;
+    private int sorrend;
+    private long processedMilliSec;
 
-    public VideoFrame(byte[] data) {
+    public VideoFrame(byte[] data, int i) {
         this.data = data;
+        this.sorrend = i;
     }
 
     public byte[] getData() {
@@ -24,5 +27,25 @@ public class VideoFrame {
 
     public void setProcessedData(byte[] processedData) {
         this.processedData = processedData;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
+    public int getSorrend() {
+        return sorrend;
+    }
+
+    public void setSorrend(int sorrend) {
+        this.sorrend = sorrend;
+    }
+
+    public long getProcessedMilliSec() {
+        return processedMilliSec;
+    }
+
+    public void setProcessedMilliSec(long processedMilliSec) {
+        this.processedMilliSec = processedMilliSec;
     }
 }

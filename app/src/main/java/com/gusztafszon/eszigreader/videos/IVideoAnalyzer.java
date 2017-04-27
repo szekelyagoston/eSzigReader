@@ -11,7 +11,7 @@ public interface IVideoAnalyzer {
 
     List<VideoFrame> getFrames();
 
-    List<VideoFrame> filterFrames();
+    List<VideoFrame> filterFrames(int compressLevel);
 
     void resetFrames();
 }

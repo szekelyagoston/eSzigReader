@@ -90,6 +90,11 @@ public class NfcActivity  extends AppCompatActivity {
 
     private IVideoAnalyzer videoAnalyzer;
 
+
+    private static final int COMPRESS_LEVEL_NONE = 100;
+    private static final int COMPRESS_LEVEL_MID = 30;
+    private static final int COMPRESS_LEVEL_SMALL = 3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -336,55 +341,30 @@ public class NfcActivity  extends AppCompatActivity {
                 releaseCamera();
 
 
-                ChallengeTask challengeTask = new ChallengeTask(NfcActivity.this, model, videoAnalyzer, new IChallengeCallback() {
+                ChallengeTask challengeTask = new ChallengeTask(NfcActivity.this, model, videoAnalyzer,COMPRESS_LEVEL_NONE, false, new IChallengeCallback() {
                     @Override
                     public void onResult(final ResultDto result) {
-                        if (result.getSuccess()){
-                            NfcActivity.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    button.setEnabled(true);
 
-                                    textView.setText("Login successful! \n Click the button to finish login!");
-                                    textView.setTextColor(Color.parseColor(SUCCESS_COLOR));
-                                    textView.setTypeface(null, Typeface.BOLD);
+                    }
+                });
 
-                                    button.setText("RETURN TO LOGIN PAGE");
+                ChallengeTask challengeTask1 = new ChallengeTask(NfcActivity.this, model, videoAnalyzer,COMPRESS_LEVEL_MID, false, new IChallengeCallback() {
+                    @Override
+                    public void onResult(final ResultDto result) {
 
-                                    button.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            NfcActivity.this.finishAffinity();
-                                        }
-                                    });
-                                }
-                            });
+                    }
+                });
 
+                ChallengeTask challengeTask2 = new ChallengeTask(NfcActivity.this, model, videoAnalyzer,COMPRESS_LEVEL_SMALL,true, new IChallengeCallback() {
+                    @Override
+                    public void onResult(final ResultDto result) {
 
-                        }else{
-                            NfcActivity.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    button.setEnabled(true);
-                                    textView.setText("Login not successful! \n " + result.getMessage() + "\n Click the button to return the main page!");
-                                    textView.setTextColor(Color.parseColor(ERROR_COLOR));
-                                    textView.setTypeface(null, Typeface.BOLD);
-
-                                    button.setText("RETURN TO LOGIN PAGE");
-                                    button.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            NfcActivity.this.finishAffinity();
-                                        }
-                                    });
-                                }
-                            });
-
-                        }
                     }
                 });
 
                 challengeTask.execute();
+                challengeTask1.execute();
+                challengeTask2.execute();
 
             }
 
@@ -453,7 +433,7 @@ public class NfcActivity  extends AppCompatActivity {
         public void onPreviewFrame(byte[] data, Camera camera) {
             //camera.startPreview();
             if (analyzeRunning){
-                videoAnalyzer.addFrame(new VideoFrame(data));
+                videoAnalyzer.addFrame(new VideoFrame(data, 1));
             }
         }
 

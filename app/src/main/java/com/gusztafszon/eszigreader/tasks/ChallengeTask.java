@@ -2,6 +2,7 @@ package com.gusztafszon.eszigreader.tasks;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.os.Handler;
 
 import com.gusztafszon.eszigreader.activities.NfcActivity;
 import com.gusztafszon.eszigreader.callbacks.IChallengeCallback;
@@ -39,22 +40,30 @@ public class ChallengeTask extends AsyncTask<Void, Void, Void> {
 
     private IVideoAnalyzer videoAnalyzer;
 
-    public ChallengeTask(NfcActivity activity, MainActivityModel model, IVideoAnalyzer videoAnalyzer, IChallengeCallback cb){
+    private int compressLevel;
+
+    private boolean islast;
+
+    public ChallengeTask(NfcActivity activity, MainActivityModel model, IVideoAnalyzer videoAnalyzer, int compressLevel, boolean islast, IChallengeCallback cb){
         this.cb = cb;
         this.dialog = new ProgressDialog(activity);
         this.model = model;
         this.videoAnalyzer = videoAnalyzer;
+        this.compressLevel = compressLevel;
+        this.islast = islast;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
 
-        List<VideoFrame> frames = videoAnalyzer.filterFrames();
+        videoAnalyzer.resetFrames();
+        List<VideoFrame> frames = videoAnalyzer.filterFrames(compressLevel);
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(frames.size());
+        final ScheduledExecutorService executor = Executors.newScheduledThreadPool(frames.size());
         List<Response> responses = new ArrayList<Response>();
-        for (VideoFrame frame : frames){
-            Callable<Response> callable =  new RestVideoApi(model.getIdServerPath(), model.getUid(), frame.getProcessedData());
+        for (int i = 0; i < frames.size(); ++i){
+            VideoFrame frame = frames.get(i);
+            Callable<Response> callable =  new RestVideoApi(model.getIdServerPath(), model.getUid(), frame.getProcessedData(), frame.getSorrend(), compressLevel, frame.getProcessedMilliSec());
             Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
             Response result = null;
             try {
@@ -67,28 +76,32 @@ public class ChallengeTask extends AsyncTask<Void, Void, Void> {
             }
         }
 
-        Callable<Response> callable =  new RestFinishApi(model.getIdServerPath(), model.getUid());
-        Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
-        Response result = null;
-        try {
-            result = future.get(100, TimeUnit.SECONDS);
-            cb.onResult(new ResultDto(result.isSuccessful(), result.body().string()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
 
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
+        if (islast){
+            Callable<Response> callable =  new RestFinishApi(model.getIdServerPath(), model.getUid());
+            Future<Response> future = executor.schedule(callable, 0, TimeUnit.MILLISECONDS);
+            Response result = null;
+            try {
+                result = future.get(100, TimeUnit.SECONDS);
+                cb.onResult(new ResultDto(result.isSuccessful(), result.body().string()));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+                cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
 
-        }catch(Exception e){
-            e.printStackTrace();
-            cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
+            } catch (IOException e) {
+                e.printStackTrace();
+                cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
+
+            }catch(Exception e){
+                e.printStackTrace();
+                cb.onResult(new ResultDto(false, "There was a problem, please try again later!"));
+            }
         }
+
 
         return null;
     }
