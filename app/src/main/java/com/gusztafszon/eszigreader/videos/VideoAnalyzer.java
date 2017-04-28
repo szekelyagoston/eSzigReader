@@ -151,7 +151,7 @@ public class VideoAnalyzer implements IVideoAnalyzer{
     private int findingCompressLevel(int length) {
         if ((length / 1024) > 1000){
             //for my LG phone
-            return 1;
+            return 30;
         }else{
             //fro Szilvika phone
             return 100;
